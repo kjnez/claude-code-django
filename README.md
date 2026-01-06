@@ -151,7 +151,7 @@ Create `.claude/skills/testing-patterns/SKILL.md`. See [testing-patterns/SKILL.m
 ```markdown
 ---
 name: testing-patterns
-description: Jest testing patterns for this project. Use when writing or modifying tests.
+description: Jest testing patterns for this project. Use when writing tests, creating mocks, or following TDD workflow.
 ---
 
 # Testing Patterns
@@ -165,6 +165,8 @@ description: Jest testing patterns for this project. Use when writing or modifyi
 - Use factory functions: `getMockUser(overrides)`
 - Mock external dependencies, not internal modules
 ```
+
+> **Tip:** The `description` field is critical—Claude uses it to decide when to apply the skill. Include keywords users would naturally mention.
 
 ---
 
@@ -343,12 +345,23 @@ Skills are markdown documents that teach Claude project-specific patterns and co
 - [core-components](.claude/skills/core-components/SKILL.md) - Design system, tokens
 - [formik-patterns](.claude/skills/formik-patterns/SKILL.md) - Form handling, validation
 
+#### SKILL.md Frontmatter Fields
+
+| Field | Required | Max Length | Description |
+|-------|----------|------------|-------------|
+| `name` | **Yes** | 64 chars | Lowercase letters, numbers, and hyphens only. Should match directory name. |
+| `description` | **Yes** | 1024 chars | What the skill does and when to use it. Claude uses this to decide when to apply the skill. |
+| `allowed-tools` | No | - | Comma-separated list of tools Claude can use (e.g., `Read, Grep, Bash(npm:*)`). |
+| `model` | No | - | Specific model to use (e.g., `claude-sonnet-4-20250514`). |
+
 #### SKILL.md Format
 
 ```markdown
 ---
 name: skill-name
-description: Clear description of what this skill covers and when to use it. (max 1024 chars)
+description: What this skill does and when to use it. Include keywords users would mention.
+allowed-tools: Read, Grep, Glob
+model: claude-sonnet-4-20250514
 ---
 
 # Skill Title
@@ -377,10 +390,11 @@ description: Clear description of what this skill covers and when to use it. (ma
 
 #### Best Practices for Skills
 
-1. **Keep SKILL.md focused** - Under 500 lines, use progressive disclosure
-2. **Use clear triggers** - Describe exactly when this skill applies
-3. **Include examples** - Show both good and bad patterns
+1. **Keep SKILL.md focused** - Under 500 lines; put detailed docs in separate referenced files
+2. **Write trigger-rich descriptions** - Claude uses semantic matching on descriptions to decide when to apply skills
+3. **Include examples** - Show both good and bad patterns with code
 4. **Reference other skills** - Show how skills work together
+5. **Use exact filename** - Must be `SKILL.md` (case-sensitive)
 
 ---
 

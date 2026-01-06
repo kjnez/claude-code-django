@@ -51,16 +51,23 @@ Skills are automatically invoked when Claude recognizes relevant context. Each s
 ## Adding New Skills
 
 1. Create directory: `.claude/skills/skill-name/`
-2. Add `SKILL.md` with YAML frontmatter:
+2. Add `SKILL.md` (case-sensitive) with YAML frontmatter:
    ```yaml
    ---
-   name: skill-name
-   description: Clear description of what and when. (max 1024 chars)
+   # Required fields
+   name: skill-name              # Lowercase, hyphens, max 64 chars
+   description: What it does and when to use it. Include trigger keywords.  # Max 1024 chars
+
+   # Optional fields
+   allowed-tools: Read, Grep, Glob    # Restrict available tools
+   model: claude-sonnet-4-20250514    # Specific model to use
    ---
    ```
 3. Include standard sections: When to Use, Core Patterns, Anti-Patterns, Integration
 4. Add to this README
 5. Add triggers to `.claude/hooks/skill-rules.json`
+
+**Important:** The `description` field is critical—Claude uses semantic matching on it to decide when to apply the skill. Include keywords users would naturally mention.
 
 ## Maintenance
 
