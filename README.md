@@ -401,13 +401,19 @@ Claude:
 ```
 
 **Databases:**
+Take a look at [postgres-mcp](https://github.com/crystaldba/postgres-mcp).
 ```json
 {
   "postgres": {
-    "type": "stdio",
-    "command": "npx",
-    "args": ["-y", "@anthropic/mcp-postgres"],
-    "env": { "DATABASE_URL": "${DATABASE_URL}" }
+    "command": "uv",
+    "args": [
+      "run",
+      "postgres-mcp",
+      "--access-mode=unrestricted"
+    ],
+    "env": {
+      "DATABASE_URI": "${DATABASE_URL}"
+    }
   }
 }
 ```
@@ -503,6 +509,7 @@ For advanced setups, create `.lsp.json`:
 ```
 
 #### Troubleshooting
+Note: According to this issue, all LSP plugins are not working right now: https://github.com/anthropics/claude-code/issues/14803. But the pre-release of v2.1.0 fixed it and you can try it with `npx @anthropic-ai/claude-code@2.1.0`.
 
 If LSP isn't working:
 
