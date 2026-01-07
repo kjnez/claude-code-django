@@ -40,11 +40,14 @@
     },
 
     "postgres": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@anthropic/mcp-postgres"],
+      "command": "uv",
+      "args": [
+        "run",
+        "postgres-mcp",
+        "--access-mode=unrestricted"
+      ],
       "env": {
-        "DATABASE_URL": "${DATABASE_URL}"
+        "DATABASE_URI": "${DATABASE_URL}"
       }
     },
 
