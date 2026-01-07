@@ -1,4 +1,4 @@
-# Claude Code Project Configuration Showcase
+# Claude Code Configuration for Django Projects
 
 > Most software engineers are seriously sleeping on how good LLM agents are right now, especially something like Claude Code.
 
@@ -6,11 +6,11 @@ Once you've got Claude Code set up, you can point it at your codebase, have it l
 
 ### What This Looks Like in Practice
 
-**Custom UI Library?** We have a [skill that explains exactly how to use it](.claude/skills/core-components/SKILL.md). Same for [how we write tests](.claude/skills/testing-patterns/SKILL.md), [how we structure GraphQL](.claude/skills/graphql-schema/SKILL.md), and basically how we want everything done in our repo. So when Claude generates code, it already matches our patterns and standards out of the box.
+**Django Models and QuerySets?** We have [skills that explain exactly how to optimize them](.claude/skills/django-models/SKILL.md). Same for [how we write tests](.claude/skills/pytest-django-patterns/SKILL.md), [how we handle forms](.claude/skills/django-forms/SKILL.md), and basically how we want everything done in our repo. So when Claude generates code, it already matches our patterns and standards out of the box.
 
-**Automated Quality Gates?** We use [hooks](.claude/settings.json) to auto-format code, run tests when test files change, type-check TypeScript, and even [block edits on the main branch](.claude/settings.md). Claude Code also created a bunch of ESLint automation, including custom rules and lint checks that catch issues before they hit review.
+**Automated Quality Gates?** We use [hooks](.claude/settings.json) to auto-format code with Ruff, run tests when test files change, type-check with pyright, and even [block edits on the main branch](.claude/settings.md). The hooks catch issues like missing type hints, N+1 queries, and lint violations before they hit review.
 
-**Deep Code Review?** We have a [code review agent](.claude/agents/code-reviewer.md) that Claude runs after changes are made. It follows a detailed checklist covering TypeScript strict mode, error handling, loading states, mutation patterns, and more. When a PR goes up, we have a [GitHub Action](.github/workflows/pr-claude-code-review.yml) that does a full PR review automatically.
+**Deep Code Review?** We have a [code review agent](.claude/agents/code-reviewer.md) that Claude runs after changes are made. It follows a detailed checklist covering Python type hints, QuerySet optimization, error handling, form validation, and more. When a PR goes up, we have a [GitHub Action](.github/workflows/pr-claude-code-review.yml) that does a full PR review automatically.
 
 **Scheduled Maintenance?** We've got GitHub workflow agents that run on a schedule:
 - [Monthly docs sync](.github/workflows/scheduled-claude-code-docs-sync.yml) - Reads commits from the last month and makes sure docs are still aligned
@@ -75,9 +75,11 @@ your-project/
 │   │
 │   ├── skills/                    # Domain knowledge documents
 │   │   ├── README.md              # Skills overview
-│   │   ├── testing-patterns/
+│   │   ├── pytest-django-patterns/
 │   │   │   └── SKILL.md
-│   │   ├── graphql-schema/
+│   │   ├── django-models/
+│   │   │   └── SKILL.md
+│   │   ├── django-forms/
 │   │   │   └── SKILL.md
 │   │   └── ...
 │   │
@@ -111,19 +113,24 @@ Create `CLAUDE.md` in your project root with your project's key information. See
 # Project Name
 
 ## Quick Facts
-- **Stack**: React, TypeScript, Node.js
-- **Test Command**: `npm run test`
-- **Lint Command**: `npm run lint`
+- **Stack**: Django, PostgreSQL, HTMX
+- **Package Manager**: uv
+- **Test Command**: `uv run pytest`
+- **Lint Command**: `uv run ruff check .`
+- **Format Command**: `uv run ruff format .`
+- **Type Check**: `uv run pyright`
 
 ## Key Directories
-- `src/components/` - React components
-- `src/api/` - API layer
+- `apps/` - Django applications
+- `config/` - Django settings and root URLconf
+- `templates/` - Django templates
 - `tests/` - Test files
 
 ## Code Style
-- TypeScript strict mode
-- Prefer interfaces over types
-- No `any` - use `unknown`
+- Python 3.12+ with type hints required
+- No `Any` types - use proper type hints
+- Use early returns, avoid nested conditionals
+- Prefer Function-Based Views
 ```
 
 ### 3. Add settings.json with hooks
@@ -151,24 +158,24 @@ Create `.claude/settings.json`. See [settings.json](.claude/settings.json) for a
 
 ### 4. Add your first skill
 
-Create `.claude/skills/testing-patterns/SKILL.md`. See [testing-patterns/SKILL.md](.claude/skills/testing-patterns/SKILL.md) for a comprehensive example.
+Create `.claude/skills/pytest-django-patterns/SKILL.md`. See [pytest-django-patterns/SKILL.md](.claude/skills/pytest-django-patterns/SKILL.md) for a comprehensive example.
 
 ```markdown
 ---
-name: testing-patterns
-description: Jest testing patterns for this project. Use when writing tests, creating mocks, or following TDD workflow.
+name: pytest-django-patterns
+description: pytest-django testing patterns and TDD workflow. Use when writing tests, creating fixtures, or following TDD.
 ---
 
 # Testing Patterns
 
 ## Test Structure
-- Use `describe` blocks for grouping
-- Use `it` for individual tests
+- Use `@pytest.mark.django_db` for database tests
 - Follow AAA pattern: Arrange, Act, Assert
+- Use Factory Boy: `UserFactory.create(is_admin=True)`
 
-## Mocking
-- Use factory functions: `getMockUser(overrides)`
-- Mock external dependencies, not internal modules
+## Fixtures
+- Define fixtures in `conftest.py`
+- Use `@pytest.fixture` decorator for test setup
 ```
 
 > **Tip:** The `description` field is critical—Claude uses it to decide when to apply the skill. Include keywords users would naturally mention.
@@ -320,7 +327,8 @@ Claude:
    - Show loading state
 
 3. Searching codebase for related files...
-   Found: src/screens/Profile/ProfileScreen.tsx
+   Found: apps/users/views.py
+   Found: templates/users/profile.html
 
 4. Creating branch: cw/PROJ-123-avatar-upload
 
@@ -449,8 +457,8 @@ LSP support is enabled through plugins in `settings.json`:
 ```json
 {
   "enabledPlugins": {
-    "typescript-lsp@claude-plugins-official": true,
-    "pyright-lsp@claude-plugins-official": true
+    "pyright-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true
   }
 }
 ```
@@ -468,8 +476,8 @@ LSP support is enabled through plugins in `settings.json`:
 
 | Plugin | Language | Install Binary First |
 |--------|----------|---------------------|
+| `pyright-lsp` | Python | `pip install pyright` or `uv tool install pyright` |
 | `typescript-lsp` | TypeScript/JavaScript | `npm install -g typescript-language-server typescript` |
-| `pyright-lsp` | Python | `pip install pyright` |
 | `rust-lsp` | Rust | `rustup component add rust-analyzer` |
 
 #### Custom LSP Configuration
@@ -556,13 +564,13 @@ When you submit a prompt, the `UserPromptSubmit` hook triggers our skill evaluat
    ```
    SKILL ACTIVATION REQUIRED
 
-   Detected file paths: src/components/UserForm.tsx
+   Detected file paths: apps/users/forms.py
 
    Matched skills (ranked by relevance):
-   1. formik-patterns (HIGH confidence)
-      Matched: keyword "form", path "src/components/UserForm.tsx"
-   2. react-ui-patterns (MEDIUM confidence)
-      Matched: directory mapping, keyword "component"
+   1. django-forms (HIGH confidence)
+      Matched: keyword "form", path "apps/users/forms.py"
+   2. django-models (MEDIUM confidence)
+      Matched: directory mapping "apps/", keyword "users"
    ```
 
 #### Configuration
@@ -571,19 +579,19 @@ Skills are defined in [skill-rules.json](.claude/hooks/skill-rules.json):
 
 ```json
 {
-  "testing-patterns": {
-    "description": "Jest testing patterns and TDD workflow",
+  "pytest-django-patterns": {
+    "description": "pytest-django testing patterns and TDD workflow",
     "priority": 9,
     "triggers": {
-      "keywords": ["test", "jest", "spec", "tdd", "mock"],
-      "keywordPatterns": ["\\btest(?:s|ing)?\\b", "\\bspec\\b"],
-      "pathPatterns": ["**/*.test.ts", "**/*.test.tsx"],
+      "keywords": ["test", "pytest", "fixture", "factory", "tdd"],
+      "keywordPatterns": ["\\btest(?:s|ing)?\\b", "\\bfixture\\b"],
+      "pathPatterns": ["**/test_*.py", "**/*_test.py", "**/conftest.py"],
       "intentPatterns": [
-        "(?:write|add|create|fix).*(?:test|spec)",
-        "(?:test|spec).*(?:for|of|the)"
+        "(?:write|add|create|fix).*(?:test)",
+        "(?:test).*(?:for|the)"
       ]
     },
-    "excludePatterns": ["e2e", "maestro", "end-to-end"]
+    "excludePatterns": ["e2e", "playwright", "selenium"]
   }
 }
 ```
@@ -625,12 +633,12 @@ Skills are markdown documents that teach Claude project-specific patterns and co
 **Location:** `.claude/skills/{skill-name}/SKILL.md`
 
 **📄 Examples:**
-- [testing-patterns](.claude/skills/testing-patterns/SKILL.md) - TDD, factory functions, mocking
-- [systematic-debugging](.claude/skills/systematic-debugging/SKILL.md) - Four-phase debugging methodology
-- [react-ui-patterns](.claude/skills/react-ui-patterns/SKILL.md) - Loading states, error handling
-- [graphql-schema](.claude/skills/graphql-schema/SKILL.md) - Queries, mutations, codegen
-- [core-components](.claude/skills/core-components/SKILL.md) - Design system, tokens
-- [formik-patterns](.claude/skills/formik-patterns/SKILL.md) - Form handling, validation
+- [pytest-django-patterns](.claude/skills/pytest-django-patterns/SKILL.md) - TDD, Factory Boy, fixtures
+- [django-models](.claude/skills/django-models/SKILL.md) - QuerySet optimization, model design
+- [django-forms](.claude/skills/django-forms/SKILL.md) - ModelForm, validation
+- [drf-patterns](.claude/skills/drf-patterns/SKILL.md) - Serializers, viewsets
+- [htmx-alpine-patterns](.claude/skills/htmx-alpine-patterns/SKILL.md) - HTMX patterns
+- [celery-patterns](.claude/skills/celery-patterns/SKILL.md) - Background tasks
 
 #### SKILL.md Frontmatter Fields
 
@@ -660,15 +668,22 @@ model: claude-sonnet-4-20250514
 ## Core Patterns
 
 ### Pattern Name
-```typescript
-// Example code
+```python
+# Example code
+from django.db import models
+
+class User(models.Model):
+    email = models.EmailField(unique=True)
+    is_active = models.BooleanField(default=True)
 ```
 
 ## Anti-Patterns
 
 ### What NOT to Do
-```typescript
-// Bad example
+```python
+# Bad example - N+1 query
+for user in User.objects.all():
+    print(user.profile.bio)  # Query per user!
 ```
 
 ## Integration
@@ -714,8 +729,9 @@ You are a senior code reviewer...
 3. Provide feedback
 
 ## Checklist
-- [ ] No TypeScript `any`
-- [ ] Error handling present
+- [ ] No Python `Any` types
+- [ ] Proper error handling (no silent exceptions)
+- [ ] QuerySet optimization (select_related/prefetch_related)
 - [ ] Tests included
 ```
 
@@ -917,12 +933,15 @@ Commit everything except:
 | [.claude/hooks/skill-eval.js](.claude/hooks/skill-eval.js) | Node.js skill matching engine |
 | [.claude/hooks/skill-rules.json](.claude/hooks/skill-rules.json) | Pattern matching rules |
 | **Skills** | |
-| [.claude/skills/testing-patterns/SKILL.md](.claude/skills/testing-patterns/SKILL.md) | TDD, factory functions, mocking |
+| [.claude/skills/pytest-django-patterns/SKILL.md](.claude/skills/pytest-django-patterns/SKILL.md) | TDD, Factory Boy, fixtures |
+| [.claude/skills/django-models/SKILL.md](.claude/skills/django-models/SKILL.md) | QuerySet optimization, model design |
+| [.claude/skills/django-forms/SKILL.md](.claude/skills/django-forms/SKILL.md) | ModelForm, validation |
+| [.claude/skills/drf-patterns/SKILL.md](.claude/skills/drf-patterns/SKILL.md) | DRF serializers, viewsets |
+| [.claude/skills/htmx-alpine-patterns/SKILL.md](.claude/skills/htmx-alpine-patterns/SKILL.md) | HTMX patterns for Django |
+| [.claude/skills/celery-patterns/SKILL.md](.claude/skills/celery-patterns/SKILL.md) | Background tasks, idempotency |
+| [.claude/skills/django-templates/SKILL.md](.claude/skills/django-templates/SKILL.md) | Template inheritance, partials |
+| [.claude/skills/django-channels/SKILL.md](.claude/skills/django-channels/SKILL.md) | WebSocket consumers |
 | [.claude/skills/systematic-debugging/SKILL.md](.claude/skills/systematic-debugging/SKILL.md) | Four-phase debugging |
-| [.claude/skills/react-ui-patterns/SKILL.md](.claude/skills/react-ui-patterns/SKILL.md) | Loading/error/empty states |
-| [.claude/skills/graphql-schema/SKILL.md](.claude/skills/graphql-schema/SKILL.md) | Queries, mutations, codegen |
-| [.claude/skills/core-components/SKILL.md](.claude/skills/core-components/SKILL.md) | Design system, tokens |
-| [.claude/skills/formik-patterns/SKILL.md](.claude/skills/formik-patterns/SKILL.md) | Form handling, validation |
 | **GitHub Workflows** | |
 | [.github/workflows/pr-claude-code-review.yml](.github/workflows/pr-claude-code-review.yml) | Auto PR review |
 | [.github/workflows/scheduled-claude-code-docs-sync.yml](.github/workflows/scheduled-claude-code-docs-sync.yml) | Monthly docs sync |
