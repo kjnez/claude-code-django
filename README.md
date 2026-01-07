@@ -651,7 +651,7 @@ Skills are markdown documents that teach Claude project-specific patterns and co
 
 #### SKILL.md Format
 
-```markdown
+````markdown
 ---
 name: skill-name
 description: What this skill does and when to use it. Include keywords users would mention.
@@ -697,7 +697,7 @@ for user in User.objects.all():
 3. **Include examples** - Show both good and bad patterns with code
 4. **Reference other skills** - Show how skills work together
 5. **Use exact filename** - Must be `SKILL.md` (case-sensitive)
-
+````
 ---
 
 ### Agents - Specialized Assistants
