@@ -75,11 +75,11 @@ your-project/
 │   │
 │   ├── skills/                    # Domain knowledge documents
 │   │   ├── README.md              # Skills overview
-│   │   ├── pytest-django-patterns/
+│   │   ├── skill-creator/
 │   │   │   └── SKILL.md
-│   │   ├── django-models/
+│   │   ├── django-extensions/
 │   │   │   └── SKILL.md
-│   │   ├── django-forms/
+│   │   ├── systematic-debugging/
 │   │   │   └── SKILL.md
 │   │   └── ...
 │   │
@@ -158,24 +158,23 @@ Create `.claude/settings.json`. See [settings.json](.claude/settings.json) for a
 
 ### 4. Add your first skill
 
-Create `.claude/skills/pytest-django-patterns/SKILL.md`. See [pytest-django-patterns/SKILL.md](.claude/skills/pytest-django-patterns/SKILL.md) for a comprehensive example.
+Create `.claude/skills/your-skill-name/SKILL.md`. See [skill-creator/SKILL.md](.claude/skills/skill-creator/SKILL.md) for guidance on creating effective skills, or [django-extensions/SKILL.md](.claude/skills/django-extensions/SKILL.md) for a simple example.
 
 ```markdown
 ---
-name: pytest-django-patterns
-description: pytest-django testing patterns and TDD workflow. Use when writing tests, creating fixtures, or following TDD.
+name: your-skill-name
+description: What this skill does and when to use it. Include keywords users would mention.
 ---
 
-# Testing Patterns
+# Your Skill Title
 
-## Test Structure
-- Use `@pytest.mark.django_db` for database tests
-- Follow AAA pattern: Arrange, Act, Assert
-- Use Factory Boy: `UserFactory.create(is_admin=True)`
+## When to Use
+- Describe when Claude should use this skill
+- Include specific trigger scenarios
 
-## Fixtures
-- Define fixtures in `conftest.py`
-- Use `@pytest.fixture` decorator for test setup
+## Core Patterns
+- Show examples and best practices
+- Include code snippets if relevant
 ```
 
 > **Tip:** The `description` field is critical—Claude uses it to decide when to apply the skill. Include keywords users would naturally mention.
@@ -571,13 +570,13 @@ When you submit a prompt, the `UserPromptSubmit` hook triggers our skill evaluat
    ```
    SKILL ACTIVATION REQUIRED
 
-   Detected file paths: apps/users/forms.py
+   Detected file paths: .claude/skills/README.md, README.md
 
    Matched skills (ranked by relevance):
-   1. django-forms (HIGH confidence)
-      Matched: keyword "form", path "apps/users/forms.py"
-   2. django-models (MEDIUM confidence)
-      Matched: directory mapping "apps/", keyword "users"
+   1. skill-creator (HIGH confidence)
+      Matched: keyword "skill", path ".claude/skills/"
+   2. django-extensions (MEDIUM confidence)
+      Matched: directory mapping ".claude/"
    ```
 
 #### Configuration
@@ -586,19 +585,19 @@ Skills are defined in [skill-rules.json](.claude/hooks/skill-rules.json):
 
 ```json
 {
-  "pytest-django-patterns": {
-    "description": "pytest-django testing patterns and TDD workflow",
+  "systematic-debugging": {
+    "description": "Four-phase debugging methodology with root cause analysis",
     "priority": 9,
     "triggers": {
-      "keywords": ["test", "pytest", "fixture", "factory", "tdd"],
-      "keywordPatterns": ["\\btest(?:s|ing)?\\b", "\\bfixture\\b"],
-      "pathPatterns": ["**/test_*.py", "**/*_test.py", "**/conftest.py"],
+      "keywords": ["bug", "debug", "fix", "error", "issue", "troubleshoot"],
+      "keywordPatterns": ["\\bbug\\b", "\\bdebug\\b", "\\bfix\\b"],
+      "pathPatterns": ["**/tests/**", "**/test_*.py"],
       "intentPatterns": [
-        "(?:write|add|create|fix).*(?:test)",
-        "(?:test).*(?:for|the)"
+        "(?:fix|debug|investigate).*(?:bug|issue|error)",
+        "(?:why|what).*(?:failing|broken|wrong)"
       ]
     },
-    "excludePatterns": ["e2e", "playwright", "selenium"]
+    "excludePatterns": []
   }
 }
 ```

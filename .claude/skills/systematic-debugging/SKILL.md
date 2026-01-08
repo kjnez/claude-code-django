@@ -197,7 +197,5 @@ Three consecutive failed fixes = architectural problem. Stop and discuss.
 
 ## Integration with Other Skills
 
-- **pytest-django-patterns**: Write reproduction tests
-- **django-models**: Debug QuerySet issues
-- **celery-patterns**: Debug async task failures
-- **htmx-alpine-patterns**: Debug HTMX requests
+- **django-extensions**: Use `show_urls`, `list_model_info`, and `shell_plus` for project introspection
+- **skill-creator**: Create debugging-specific skills for recurring issues
