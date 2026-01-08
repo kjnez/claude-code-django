@@ -78,15 +78,9 @@
 
 Before implementing ANY task, check if relevant skills apply:
 
-- Creating tests → `pytest-django-patterns` skill
-- Building forms → `django-forms` skill
-- REST API work → `drf-patterns` skill
-- HTMX/Alpine UI → `htmx-alpine-patterns` skill
-- Template work → `django-templates` skill
-- Background tasks → `celery-patterns` skill
-- WebSocket/realtime → `django-channels` skill
-- Model design → `django-models` skill
 - Debugging issues → `systematic-debugging` skill
+- Exploring Django project (models, URLs, settings) → `django-extensions` skill
+- Creating new skills → `skill-creator` skill
 
 ## Common Commands
 

@@ -6,7 +6,7 @@ Once you've got Claude Code set up, you can point it at your codebase, have it l
 
 ### What This Looks Like in Practice
 
-**Django Models and QuerySets?** We have [skills that explain exactly how to optimize them](.claude/skills/django-models/SKILL.md). Same for [how we write tests](.claude/skills/pytest-django-patterns/SKILL.md), [how we handle forms](.claude/skills/django-forms/SKILL.md), and basically how we want everything done in our repo. So when Claude generates code, it already matches our patterns and standards out of the box.
+**Django Project Introspection?** We have a [skill for django-extensions](.claude/skills/django-extensions/SKILL.md) that helps Claude use management commands to explore models, URLs, settings, and more. Need to [create new skills](.claude/skills/skill-creator/SKILL.md)? We have guidance for that too. And when debugging, our [systematic debugging skill](.claude/skills/systematic-debugging/SKILL.md) ensures root cause analysis before applying fixes.
 
 **Automated Quality Gates?** We use [hooks](.claude/settings.json) to auto-format code with Ruff, run tests when test files change, type-check with pyright, and even [block edits on the main branch](.claude/settings.md). The hooks catch issues like missing type hints, N+1 queries, and lint violations before they hit review.
 
@@ -640,12 +640,9 @@ Skills are markdown documents that teach Claude project-specific patterns and co
 **Location:** `.claude/skills/{skill-name}/SKILL.md`
 
 **📄 Examples:**
-- [pytest-django-patterns](.claude/skills/pytest-django-patterns/SKILL.md) - TDD, Factory Boy, fixtures
-- [django-models](.claude/skills/django-models/SKILL.md) - QuerySet optimization, model design
-- [django-forms](.claude/skills/django-forms/SKILL.md) - ModelForm, validation
-- [drf-patterns](.claude/skills/drf-patterns/SKILL.md) - Serializers, viewsets
-- [htmx-alpine-patterns](.claude/skills/htmx-alpine-patterns/SKILL.md) - HTMX patterns
-- [celery-patterns](.claude/skills/celery-patterns/SKILL.md) - Background tasks
+- [skill-creator](.claude/skills/skill-creator/SKILL.md) - Guide for creating effective skills
+- [django-extensions](.claude/skills/django-extensions/SKILL.md) - Django-extensions management commands
+- [systematic-debugging](.claude/skills/systematic-debugging/SKILL.md) - Four-phase debugging methodology
 
 #### SKILL.md Frontmatter Fields
 
@@ -940,15 +937,9 @@ Commit everything except:
 | [.claude/hooks/skill-eval.js](.claude/hooks/skill-eval.js) | Node.js skill matching engine |
 | [.claude/hooks/skill-rules.json](.claude/hooks/skill-rules.json) | Pattern matching rules |
 | **Skills** | |
-| [.claude/skills/pytest-django-patterns/SKILL.md](.claude/skills/pytest-django-patterns/SKILL.md) | TDD, Factory Boy, fixtures |
-| [.claude/skills/django-models/SKILL.md](.claude/skills/django-models/SKILL.md) | QuerySet optimization, model design |
-| [.claude/skills/django-forms/SKILL.md](.claude/skills/django-forms/SKILL.md) | ModelForm, validation |
-| [.claude/skills/drf-patterns/SKILL.md](.claude/skills/drf-patterns/SKILL.md) | DRF serializers, viewsets |
-| [.claude/skills/htmx-alpine-patterns/SKILL.md](.claude/skills/htmx-alpine-patterns/SKILL.md) | HTMX patterns for Django |
-| [.claude/skills/celery-patterns/SKILL.md](.claude/skills/celery-patterns/SKILL.md) | Background tasks, idempotency |
-| [.claude/skills/django-templates/SKILL.md](.claude/skills/django-templates/SKILL.md) | Template inheritance, partials |
-| [.claude/skills/django-channels/SKILL.md](.claude/skills/django-channels/SKILL.md) | WebSocket consumers |
-| [.claude/skills/systematic-debugging/SKILL.md](.claude/skills/systematic-debugging/SKILL.md) | Four-phase debugging |
+| [.claude/skills/skill-creator/SKILL.md](.claude/skills/skill-creator/SKILL.md) | Guide for creating effective skills |
+| [.claude/skills/django-extensions/SKILL.md](.claude/skills/django-extensions/SKILL.md) | Django-extensions management commands |
+| [.claude/skills/systematic-debugging/SKILL.md](.claude/skills/systematic-debugging/SKILL.md) | Four-phase debugging methodology |
 | **GitHub Workflows** | |
 | [.github/workflows/pr-claude-code-review.yml](.github/workflows/pr-claude-code-review.yml) | Auto PR review |
 | [.github/workflows/scheduled-claude-code-docs-sync.yml](.github/workflows/scheduled-claude-code-docs-sync.yml) | Monthly docs sync |
