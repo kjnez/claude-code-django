@@ -6,7 +6,7 @@ Once you've got Claude Code set up, you can point it at your codebase, have it l
 
 ### What This Looks Like in Practice
 
-**Django Project Introspection?** We have a [skill for django-extensions](.claude/skills/django-extensions/SKILL.md) that helps Claude use management commands to explore models, URLs, settings, and more. Need to [create new skills](.claude/skills/skill-creator/SKILL.md)? We have guidance for that too. And when debugging, our [systematic debugging skill](.claude/skills/systematic-debugging/SKILL.md) ensures root cause analysis before applying fixes.
+**Domain Knowledge Skills?** We have [11 specialized skills](.claude/skills/) covering everything from [Django models](.claude/skills/django-models/SKILL.md) and [forms](.claude/skills/django-forms/SKILL.md) to [HTMX patterns](.claude/skills/htmx-alpine-patterns/SKILL.md), [DRF APIs](.claude/skills/drf-patterns/SKILL.md), and [Celery tasks](.claude/skills/celery-patterns/SKILL.md). When debugging, our [systematic debugging skill](.claude/skills/systematic-debugging/SKILL.md) ensures root cause analysis before fixes. Need to explore your Django project? Use [django-extensions](.claude/skills/django-extensions/SKILL.md). Want to create new skills? Follow the [skill-creator guide](.claude/skills/skill-creator/SKILL.md).
 
 **Automated Quality Gates?** We use [hooks](.claude/settings.json) to auto-format code with Ruff, run tests when test files change, type-check with pyright, and even [block edits on the main branch](.claude/settings.md). The hooks catch issues like missing type hints, N+1 queries, and lint violations before they hit review.
 
@@ -642,6 +642,14 @@ Skills are markdown documents that teach Claude project-specific patterns and co
 - [skill-creator](.claude/skills/skill-creator/SKILL.md) - Guide for creating effective skills
 - [django-extensions](.claude/skills/django-extensions/SKILL.md) - Django-extensions management commands
 - [systematic-debugging](.claude/skills/systematic-debugging/SKILL.md) - Four-phase debugging methodology
+- [pytest-django-patterns](.claude/skills/pytest-django-patterns/SKILL.md) - pytest-django, Factory Boy, fixtures, TDD
+- [django-models](.claude/skills/django-models/SKILL.md) - Model design, QuerySet optimization, migrations
+- [django-forms](.claude/skills/django-forms/SKILL.md) - Form handling, validation, ModelForm patterns
+- [django-templates](.claude/skills/django-templates/SKILL.md) - Template inheritance, tags, filters
+- [htmx-alpine-patterns](.claude/skills/htmx-alpine-patterns/SKILL.md) - HTMX attributes, dynamic UI
+- [drf-patterns](.claude/skills/drf-patterns/SKILL.md) - Django REST Framework patterns
+- [celery-patterns](.claude/skills/celery-patterns/SKILL.md) - Celery tasks, retry strategies
+- [django-channels](.claude/skills/django-channels/SKILL.md) - WebSocket consumers, real-time features
 
 #### SKILL.md Frontmatter Fields
 
@@ -939,6 +947,14 @@ Commit everything except:
 | [.claude/skills/skill-creator/SKILL.md](.claude/skills/skill-creator/SKILL.md) | Guide for creating effective skills |
 | [.claude/skills/django-extensions/SKILL.md](.claude/skills/django-extensions/SKILL.md) | Django-extensions management commands |
 | [.claude/skills/systematic-debugging/SKILL.md](.claude/skills/systematic-debugging/SKILL.md) | Four-phase debugging methodology |
+| [.claude/skills/pytest-django-patterns/SKILL.md](.claude/skills/pytest-django-patterns/SKILL.md) | pytest-django, Factory Boy, fixtures, TDD |
+| [.claude/skills/django-models/SKILL.md](.claude/skills/django-models/SKILL.md) | Model design, QuerySet optimization |
+| [.claude/skills/django-forms/SKILL.md](.claude/skills/django-forms/SKILL.md) | Form handling, validation |
+| [.claude/skills/django-templates/SKILL.md](.claude/skills/django-templates/SKILL.md) | Template inheritance, tags, filters |
+| [.claude/skills/htmx-alpine-patterns/SKILL.md](.claude/skills/htmx-alpine-patterns/SKILL.md) | HTMX attributes, dynamic UI |
+| [.claude/skills/drf-patterns/SKILL.md](.claude/skills/drf-patterns/SKILL.md) | Django REST Framework patterns |
+| [.claude/skills/celery-patterns/SKILL.md](.claude/skills/celery-patterns/SKILL.md) | Celery tasks, retry strategies |
+| [.claude/skills/django-channels/SKILL.md](.claude/skills/django-channels/SKILL.md) | WebSocket consumers, real-time features |
 | **GitHub Workflows** | |
 | [.github/workflows/pr-claude-code-review.yml](.github/workflows/pr-claude-code-review.yml) | Auto PR review |
 | [.github/workflows/scheduled-claude-code-docs-sync.yml](.github/workflows/scheduled-claude-code-docs-sync.yml) | Monthly docs sync |
