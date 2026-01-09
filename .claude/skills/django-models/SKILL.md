@@ -1,343 +1,142 @@
 ---
 name: django-models
-description: Django model patterns including design, QuerySet optimization, managers, signals, and migrations. Use when designing models, optimizing queries, or working with the ORM.
+description: Django model design patterns emphasizing fat models/thin views, QuerySet optimization, and domain logic encapsulation. Use when designing models, optimizing queries, implementing business logic, or working with the ORM.
 ---
 
 # Django Model Patterns
 
+## Core Philosophy: Fat Models, Thin Views
+
+**Business logic belongs in models and managers, not views.** Views orchestrate workflows; models implement domain behavior. This principle creates testable, reusable code that stays maintainable as complexity grows.
+
+**Good**: Model methods handle business rules, state transitions, validation
+**Bad**: Views contain if/else logic for domain rules, calculate derived values
+
 ## Model Design
 
-### Basic Model
+### Structure Your Models Around Domain Concepts
+- Use `TextChoices`/`IntegerChoices` for status fields and enums
+- Add `get_absolute_url()` for canonical object URLs
+- Include `__str__()` for readable representations
+- Set proper `ordering` in Meta for consistent default sorting
+- Add database indexes for frequently filtered/sorted fields
+- Use abstract base models for shared fields (timestamps, soft deletes, etc.)
 
-```python
-# apps/posts/models.py
-from django.db import models
-from django.urls import reverse
+### Field Selection Guidelines
+- Use `blank=True, default=""` for optional text fields (avoid null)
+- Use `null=True, blank=True` for optional foreign keys
+- For unique optional fields, use `null=True` to avoid collision issues
+- Leverage `JSONField` for flexible metadata (avoid creating many optional fields)
+- Set appropriate `max_length` based on actual data needs
 
-class Post(models.Model):
-    class Status(models.TextChoices):
-        DRAFT = "draft", "Draft"
-        PUBLISHED = "published", "Published"
+### Encapsulate Business Logic in Model Methods
+- State transitions: `post.publish()`, `order.cancel()`
+- Permission checks: `post.is_editable_by(user)`
+- Complex calculations: `invoice.calculate_total()`
+- Use properties for computed read-only values
+- Specify `update_fields` when saving partial changes
 
-    title = models.CharField(max_length=200)
-    slug = models.SlugField(max_length=200, unique=True)
-    content = models.TextField()
-    status = models.CharField(
-        max_length=10,
-        choices=Status.choices,
-        default=Status.DRAFT,
-    )
-    author = models.ForeignKey(
-        "users.User",
-        on_delete=models.CASCADE,
-        related_name="posts",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+## QuerySet Patterns: The Power of Composition
 
-    class Meta:
-        ordering = ["-created_at"]
-        indexes = [
-            models.Index(fields=["status", "-created_at"]),
-        ]
+**Custom QuerySet classes are your secret weapon.** They make queries reusable, chainable, and testable.
 
-    def __str__(self) -> str:
-        return self.title
-
-    def get_absolute_url(self) -> str:
-        return reverse("posts:detail", kwargs={"slug": self.slug})
+### Pattern: QuerySet as Manager
+```
+Define a QuerySet subclass with domain-specific filter methods
+Attach it to your model: objects = YourQuerySet.as_manager()
+Chain methods for composable queries
 ```
 
-### Abstract Base Model
+### Benefits
+- Reusable query logic across views, tasks, management commands
+- Chainable methods enable expressive, readable queries
+- Easy to test in isolation
+- Encapsulates query complexity away from views
 
-```python
-class TimestampedModel(models.Model):
-    """Abstract base with created/updated timestamps."""
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+### Common QuerySet Methods
+- Filtering by status/state
+- Date range queries (recent, upcoming, expired)
+- User-scoped queries (owned_by, visible_to)
+- Combined lookups (published_and_recent)
 
-    class Meta:
-        abstract = True
+## Query Optimization: Avoid N+1 Queries
 
-class Post(TimestampedModel):
-    title = models.CharField(max_length=200)
-    # Inherits created_at, updated_at
-```
+### The Golden Rules
+1. **select_related()**: Use for ForeignKey and OneToOneField (creates SQL JOIN)
+2. **prefetch_related()**: Use for ManyToManyField and reverse ForeignKeys (separate query + Python join)
+3. **only()**: Load specific fields when you don't need the whole object
+4. **defer()**: Exclude heavy fields (TextField, JSONField) you won't use
+5. **Prefetch()** object: Customize prefetch with filters and select_related
 
-## Field Patterns
+### Efficient Counting and Existence Checks
+- Use `.exists()` instead of `if queryset:` or `if len(queryset):`
+- Use `.count()` instead of `len(queryset.all())`
+- Both perform database-level operations without loading objects
 
-### Nullable Fields
+### Aggregation and Annotation
+- `annotate()`: Add computed fields to each object (Count, Sum, Avg, etc.)
+- `aggregate()`: Compute values across entire queryset
+- Use `F()` expressions for database-level updates (`views=F('views') + 1`)
+- Combine annotate with filter for "objects with at least N related items"
 
-```python
-# Optional text field
-bio = models.TextField(blank=True, default="")  # Use empty string
+## Managers vs QuerySets
 
-# Optional foreign key
-category = models.ForeignKey(
-    "Category",
-    on_delete=models.SET_NULL,
-    null=True,
-    blank=True,
-)
+**Use QuerySets for chainable query logic.**
+**Use Managers for model-level operations that don't return querysets.**
 
-# Optional unique field (use null, not empty string)
-external_id = models.CharField(max_length=100, unique=True, null=True, blank=True)
-```
+Manager: Think "factory methods" - `User.objects.create_user()`
+QuerySet: Think "filters and transformations" - `Post.objects.published().recent()`
 
-### JSON Field
+Most of the time, you want a custom QuerySet, not a custom Manager.
 
-```python
-metadata = models.JSONField(default=dict, blank=True)
+## Signals: Use Sparingly
 
-# Usage
-post.metadata = {"views": 100, "likes": 50}
-post.metadata["views"] += 1
+Signals create implicit coupling and make code harder to follow. **Prefer explicit method calls.**
 
-# Querying
-Post.objects.filter(metadata__views__gte=100)
-```
+### When Signals Make Sense
+- Audit logging (track all changes to a model)
+- Cache invalidation (clear cache when model changes)
+- Decoupling apps (third-party app needs to react to your models)
 
-## Custom Managers
+### When to Avoid Signals
+- Business logic that should be in model methods
+- Logic tightly coupled to the calling code (just call the function directly)
+- Complex workflows (use explicit service layer instead)
 
-```python
-class PublishedManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(status="published")
-
-class Post(models.Model):
-    # ...
-    objects = models.Manager()  # Default
-    published = PublishedManager()  # Custom
-
-# Usage
-Post.objects.all()        # All posts
-Post.published.all()      # Only published
-```
-
-## QuerySet Methods
-
-```python
-class PostQuerySet(models.QuerySet):
-    def published(self):
-        return self.filter(status="published")
-
-    def by_author(self, user):
-        return self.filter(author=user)
-
-    def recent(self, days=7):
-        cutoff = timezone.now() - timedelta(days=days)
-        return self.filter(created_at__gte=cutoff)
-
-class Post(models.Model):
-    objects = PostQuerySet.as_manager()
-
-# Chainable queries
-Post.objects.published().by_author(user).recent(30)
-```
-
-## Query Optimization
-
-### Select Related (ForeignKey)
-
-```python
-# BAD: N+1 queries
-posts = Post.objects.all()
-for post in posts:
-    print(post.author.username)  # Query per post!
-
-# GOOD: Single query with JOIN
-posts = Post.objects.select_related("author")
-for post in posts:
-    print(post.author.username)  # No extra query
-```
-
-### Prefetch Related (Many-to-Many, Reverse FK)
-
-```python
-# BAD: N+1 queries
-posts = Post.objects.all()
-for post in posts:
-    print(post.tags.all())  # Query per post!
-
-# GOOD: Two queries total
-posts = Post.objects.prefetch_related("tags")
-for post in posts:
-    print(post.tags.all())  # No extra query
-
-# Custom prefetch with filtering
-from django.db.models import Prefetch
-
-posts = Post.objects.prefetch_related(
-    Prefetch(
-        "comments",
-        queryset=Comment.objects.filter(approved=True).select_related("author"),
-        to_attr="approved_comments",
-    )
-)
-```
-
-### Only/Defer Fields
-
-```python
-# Only load specific fields
-posts = Post.objects.only("id", "title", "slug")
-
-# Exclude heavy fields
-posts = Post.objects.defer("content")
-```
-
-### Aggregation
-
-```python
-from django.db.models import Count, Avg, Sum, F
-
-# Count related objects
-posts = Post.objects.annotate(comment_count=Count("comments"))
-
-# Filter by annotation
-popular = Post.objects.annotate(
-    comment_count=Count("comments")
-).filter(comment_count__gte=10)
-
-# Aggregate across all rows
-stats = Post.objects.aggregate(
-    total=Count("id"),
-    avg_comments=Avg("comment_count"),
-)
-
-# F expressions for database-level operations
-Post.objects.update(views=F("views") + 1)
-```
-
-## Signals
-
-```python
-# apps/posts/signals.py
-from django.db.models.signals import post_save, pre_delete
-from django.dispatch import receiver
-from apps.posts.models import Post
-
-@receiver(post_save, sender=Post)
-def notify_followers(sender, instance, created, **kwargs):
-    if created and instance.status == "published":
-        from apps.notifications.tasks import notify_followers
-        notify_followers.delay(instance.id)
-
-@receiver(pre_delete, sender=Post)
-def cleanup_post_files(sender, instance, **kwargs):
-    if instance.image:
-        instance.image.delete(save=False)
-
-# apps/posts/apps.py
-class PostsConfig(AppConfig):
-    name = "apps.posts"
-
-    def ready(self):
-        import apps.posts.signals  # noqa
-```
-
-## Model Methods
-
-```python
-class Post(models.Model):
-    def publish(self) -> None:
-        """Publish the post."""
-        self.status = self.Status.PUBLISHED
-        self.published_at = timezone.now()
-        self.save(update_fields=["status", "published_at"])
-
-    def is_editable_by(self, user) -> bool:
-        """Check if user can edit this post."""
-        return user == self.author or user.is_staff
-
-    @property
-    def is_published(self) -> bool:
-        return self.status == self.Status.PUBLISHED
-
-    @property
-    def reading_time(self) -> int:
-        """Estimated reading time in minutes."""
-        word_count = len(self.content.split())
-        return max(1, word_count // 200)
-```
+**Rule of thumb**: If you control both the trigger and the reaction, don't use a signal.
 
 ## Migrations
 
-```bash
-# Create migrations
-uv run python manage.py makemigrations
+### Workflow
+- Run `makemigrations` after model changes
+- Review generated migration files before applying
+- Run `migrate` to apply migrations
+- Migrations should be reversible when possible
 
-# Apply migrations
-uv run python manage.py migrate
+### Data Migrations
+Create with `makemigrations --empty app_name`. Use `apps.get_model()` to access models (not direct imports). Write both forward and reverse operations.
 
-# Show migration SQL
-uv run python manage.py sqlmigrate posts 0001
+**Use data migrations for**: Populating new fields, transforming data, migrating between fields.
 
-# Fake a migration (mark as applied)
-uv run python manage.py migrate posts 0001 --fake
-```
+## Anti-Patterns to Avoid
 
-### Data Migration
+### Query Anti-Patterns
+- Iterating over objects and accessing relations without `select_related()`/`prefetch_related()`
+- Using `if queryset:` instead of `.exists()`
+- Using `len()` to count instead of `.count()`
+- Loading entire objects when you only need specific fields
 
-```python
-# Generated with: python manage.py makemigrations --empty posts
-from django.db import migrations
+### Design Anti-Patterns
+- Business logic in views instead of models
+- Views performing calculations that belong in model methods
+- Overusing signals for synchronous operations
+- Creating new models when JSONField would suffice
+- Forgetting to add indexes for filtered/sorted fields
 
-def populate_slugs(apps, schema_editor):
-    Post = apps.get_model("posts", "Post")
-    for post in Post.objects.filter(slug=""):
-        post.slug = slugify(post.title)
-        post.save(update_fields=["slug"])
+## Integration
 
-def reverse_slugs(apps, schema_editor):
-    pass  # Nothing to reverse
-
-class Migration(migrations.Migration):
-    dependencies = [("posts", "0001_initial")]
-
-    operations = [
-        migrations.RunPython(populate_slugs, reverse_slugs),
-    ]
-```
-
-## Anti-Patterns
-
-```python
-# BAD: Query in loop
-for post in Post.objects.all():
-    print(post.author.email)  # N+1 queries!
-
-# GOOD: Prefetch
-for post in Post.objects.select_related("author"):
-    print(post.author.email)
-
-# BAD: Loading all objects
-if Post.objects.all():  # Loads ALL posts into memory
-    ...
-
-# GOOD: Use exists()
-if Post.objects.exists():
-    ...
-
-# BAD: Count with len()
-count = len(Post.objects.all())  # Loads all, counts in Python
-
-# GOOD: Use count()
-count = Post.objects.count()  # COUNT query in DB
-
-# BAD: Overusing signals
-@receiver(post_save, sender=Post)
-def do_everything(sender, instance, **kwargs):
-    # Too much logic, hard to test/debug
-
-# GOOD: Explicit method calls in view/service
-post.save()
-notify_followers(post)
-```
-
-## Integration with Other Skills
-
-- **pytest-django-patterns**: Testing models and querysets
-- **drf-patterns**: Model serialization
-- **celery-patterns**: Async model operations
-- **django-forms**: ModelForm integration
+Works with:
+- **pytest-django-patterns**: Factory-based model testing
+- **drf-patterns**: Model serialization for APIs
+- **celery-patterns**: Async operations on models (pass IDs, not instances)
+- **django-forms**: ModelForm validation and saving
