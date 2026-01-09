@@ -5,229 +5,169 @@ description: pytest-django testing patterns, Factory Boy, fixtures, and TDD work
 
 # pytest-django Testing Patterns
 
-## Testing Philosophy
+## TDD Workflow (RED-GREEN-REFACTOR)
 
-**Test-Driven Development (TDD):**
-- Write failing test FIRST
-- Implement minimal code to pass
-- Refactor after green
-- Never write production code without a failing test
+**Always follow this cycle:**
 
-## Common Decorators
+1. **RED**: Write a failing test first that describes desired behavior
+2. **GREEN**: Write minimal code to make the test pass
+3. **REFACTOR**: Clean up code while keeping tests green
+4. **REPEAT**: Never write production code without a failing test
 
-### @pytest.mark.django_db
+**Critical rule**: If implementing a feature or fixing a bug, write the test BEFORE touching production code.
 
-Required for any test that accesses the database:
+## Essential pytest-django Patterns
 
-```python
-import pytest
+### Database Access
 
-@pytest.mark.django_db
-def test_user_creation():
-    user = User.objects.create(email="test@example.com")
-    assert user.pk is not None
+- Use `@pytest.mark.django_db` on any test touching the database
+- Apply to entire module: `pytestmark = pytest.mark.django_db`
+- Transactions roll back automatically after each test
 
-# Apply to all tests in a module with pytestmark
-pytestmark = pytest.mark.django_db
+### Fixtures for Test Data
+
+**Use Factory Boy for models, pytest fixtures for setup:**
+
+- **Factories**: Create model instances with realistic data (`UserFactory()`)
+  - Use `factory.Sequence()` for unique fields
+  - Use `factory.Faker()` for realistic fake data
+  - Use `factory.SubFactory()` for foreign keys
+  - Use `@factory.post_generation` for M2M relationships
+
+- **Fixtures**: Setup clients, auth state, or shared resources
+  - `client` fixture: Django test client
+  - Create `auth_client` fixture: `client.force_login(user)` for authenticated requests
+  - Define in `conftest.py` for reuse across test files
+
+### Test Organization
+
+**Structure tests to mirror app structure:**
+```
+tests/
+├── apps/
+│   └── posts/
+│       ├── test_models.py
+│       ├── test_views.py
+│       └── test_forms.py
+├── factories.py
+└── conftest.py
 ```
 
-### @pytest.mark.parametrize
+**Group related tests in classes:**
+- Name classes `TestComponentName` (e.g., `TestPostListView`)
+- Name test methods descriptively: `test_<action>_<expected_outcome>`
+- Use `@pytest.mark.parametrize` for testing multiple scenarios
 
-Run the same test with different inputs:
+## What to Test
 
-```python
-@pytest.mark.parametrize("status,expected", [
-    ("draft", 404),
-    ("published", 200),
-])
-@pytest.mark.django_db
-def test_post_visibility(client, status, expected):
-    post = PostFactory(status=status)
-    response = client.get(f"/posts/{post.pk}/")
-    assert response.status_code == expected
-```
+### Views
+- **Status codes**: Correct HTTP responses (200, 404, 302)
+- **Authentication**: Authenticated vs anonymous behavior
+- **Authorization**: User can only access their own data
+- **Context data**: Correct objects passed to template
+- **Side effects**: Database changes, emails sent, tasks queued
+- **HTMX**: Check `HTTP_HX_REQUEST` header returns partial template
 
-### @pytest.fixture
+### Forms
+- **Validation**: Valid data passes, invalid data fails with correct errors
+- **Edge cases**: Empty fields, max lengths, unique constraints
+- **Clean methods**: Custom validation logic works
+- **Save behavior**: Objects created/updated correctly
 
-Create reusable test data:
+### Models
+- **Methods**: `__str__`, custom methods return expected values
+- **Managers/QuerySets**: Custom filtering works correctly
+- **Constraints**: Database-level validation enforced
+- **Signals**: Pre/post save hooks execute correctly
 
-```python
-@pytest.fixture
-def user(db):
-    return UserFactory()
+### Celery Tasks
+- **Mock external calls**: Patch HTTP requests, email sending, etc.
+- **Test logic only**: Don't test actual async execution
+- **Idempotency**: Running task multiple times is safe
 
-@pytest.fixture
-def auth_client(client, user):
-    client.force_login(user)
-    return client
-```
+## Django-Specific Testing Patterns
 
-## Project Setup
+### Testing HTMX Responses
 
-```python
-# pyproject.toml
-[tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "config.settings.test"
-python_files = ["test_*.py"]
-addopts = ["--reuse-db", "-ra"]
+Check partial template rendered when `HX-Request` header present:
+- Pass `HTTP_HX_REQUEST="true"` to client request
+- Assert `response.templates` contains partial template name
 
-# conftest.py
-import pytest
+### Testing Permissions
 
-@pytest.fixture
-def user(db):
-    return UserFactory()
+Create authenticated vs anonymous client fixtures:
+- Test redirect/403 for unauthorized access
+- Test success for authorized access
 
-@pytest.fixture
-def auth_client(client, user):
-    client.force_login(user)
-    return client
-```
+### Testing QuerySets
 
-## Factory Boy Patterns
+Verify efficient queries:
+- Create test data with factories
+- Execute query
+- Assert correct objects returned/excluded
+- Verify related objects loaded with `select_related()`/`prefetch_related()`
 
-### Basic Factory
+### Testing Forms with Model Instances
 
-```python
-# tests/factories.py
-import factory
-from factory.django import DjangoModelFactory
+Pass instance to form for updates:
+- `form = MyForm(data=new_data, instance=existing_obj)`
+- Verify `form.save()` updates, doesn't create
 
-class UserFactory(DjangoModelFactory):
-    class Meta:
-        model = User
+## Common Patterns
 
-    email = factory.Sequence(lambda n: f"user{n}@example.com")
-    first_name = factory.Faker("first_name")
-    is_active = True
+**Parametrize multiple scenarios:**
+Use `@pytest.mark.parametrize("input,expected", [...])` for testing various inputs
 
-# Usage
-user = UserFactory()  # Saved to DB
-user = UserFactory.build()  # Not saved
-user = UserFactory(is_staff=True)  # Override
-```
+**Mock external services:**
+Use `mocker.patch()` to avoid actual HTTP calls, emails, file operations
 
-### Related Factories
+**Check database changes:**
+- Assert `Model.objects.filter(...).exists()` after creation
+- Assert `Model.objects.count() == expected` for deletions
+- Use `refresh_from_db()` to verify updates
 
-```python
-class PostFactory(DjangoModelFactory):
-    class Meta:
-        model = Post
-
-    title = factory.Faker("sentence")
-    author = factory.SubFactory(UserFactory)
-
-    @factory.post_generation
-    def tags(self, create, extracted, **kwargs):
-        if create and extracted:
-            self.tags.add(*extracted)
-```
-
-## Test Structure
-
-```python
-# tests/apps/posts/test_views.py
-import pytest
-from http import HTTPStatus
-
-pytestmark = pytest.mark.django_db
-
-
-class TestPostListView:
-    def test_returns_200_for_authenticated_user(self, auth_client):
-        response = auth_client.get("/posts/")
-        assert response.status_code == HTTPStatus.OK
-
-    def test_redirects_anonymous_user(self, client):
-        response = client.get("/posts/")
-        assert response.status_code == HTTPStatus.FOUND
-
-    def test_displays_user_posts_only(self, auth_client, user):
-        my_post = PostFactory(author=user)
-        other_post = PostFactory()
-
-        response = auth_client.get("/posts/")
-
-        assert my_post in response.context["posts"]
-        assert other_post not in response.context["posts"]
-```
-
-## Testing Views
-
-```python
-pytestmark = pytest.mark.django_db
-
-def test_create_post(auth_client, user):
-    data = {"title": "New Post", "content": "Content"}
-
-    response = auth_client.post("/posts/create/", data)
-
-    assert response.status_code == HTTPStatus.FOUND
-    assert Post.objects.filter(title="New Post", author=user).exists()
-
-def test_htmx_returns_partial(auth_client):
-    response = auth_client.get("/posts/", HTTP_HX_REQUEST="true")
-
-    assert response.status_code == HTTPStatus.OK
-    templates = [t.name for t in response.templates]
-    assert "posts/_list.html" in templates
-```
-
-## Testing Forms
-
-```python
-class TestPostForm:
-    def test_valid_data(self):
-        form = PostForm(data={"title": "Test", "content": "Content"})
-        assert form.is_valid()
-
-    def test_blank_title_invalid(self):
-        form = PostForm(data={"title": "", "content": "Content"})
-        assert not form.is_valid()
-        assert "title" in form.errors
-```
-
-## Testing Models
-
-```python
-pytestmark = pytest.mark.django_db
-
-def test_str_returns_title():
-    post = PostFactory(title="Hello World")
-    assert str(post) == "Hello World"
-
-def test_published_manager_excludes_drafts():
-    published = PostFactory(status="published")
-    draft = PostFactory(status="draft")
-
-    assert published in Post.published.all()
-    assert draft not in Post.published.all()
-```
-
-## Mocking
-
-```python
-def test_sends_email(mocker, user):
-    mock_send = mocker.patch("apps.users.services.send_mail")
-
-    send_welcome_email(user.id)
-
-    mock_send.assert_called_once()
-    assert user.email in mock_send.call_args.kwargs["recipient_list"]
-```
+**Test error handling:**
+- Invalid form data produces correct errors
+- Failed operations return error responses
+- User sees appropriate error messages
 
 ## Running Tests
 
 ```bash
 uv run pytest                    # All tests
-uv run pytest -x --lf            # Stop first, last failed
-uv run pytest --cov=apps         # With coverage
+uv run pytest -x                 # Stop on first failure
+uv run pytest --lf               # Run last failed
+uv run pytest -x --lf            # Stop first, last failed only
+uv run pytest -k "test_name"     # Run tests matching pattern
 uv run pytest tests/apps/posts/  # Specific directory
+uv run pytest --cov=apps         # With coverage report
 ```
+
+## Common Pitfalls
+
+- **Forgetting `@pytest.mark.django_db`**: Results in "Database access not allowed" errors
+- **Not using factories**: Creating instances manually is verbose and brittle
+- **Testing implementation**: Test behavior and outcomes, not internal implementation details
+- **Skipping TDD**: Writing tests after code means tests follow implementation, missing edge cases
+- **Over-mocking**: Mock external dependencies, not your own code
+- **Testing framework code**: Don't test Django's ORM, form validation, etc. Test YOUR logic
+
+## Setup Requirements
+
+**In `pyproject.toml`:**
+```toml
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+python_files = ["test_*.py"]
+addopts = ["--reuse-db", "-ra"]
+```
+
+**In `conftest.py`:**
+Define shared fixtures (auth_client, common factories, etc.)
 
 ## Integration with Other Skills
 
-- **django-models**: Test model methods and querysets
-- **django-forms**: Test form validation
-- **celery-patterns**: Test tasks with mocking
-- **systematic-debugging**: Write test that reproduces bug first
+- **systematic-debugging**: When fixing bugs, write failing test first to reproduce
+- **django-models**: Test custom managers, QuerySets, and model methods
+- **django-forms**: Test form validation, clean methods, and save behavior
+- **celery-patterns**: Test task logic with mocked external dependencies
