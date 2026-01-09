@@ -2,37 +2,66 @@
 
 This directory contains project-specific skills that provide Claude with domain knowledge and best practices for this Django codebase.
 
-## Available Skills
+## Skills by Category
 
+### Meta & Development Tools
 | Skill | Description |
 |-------|-------------|
 | [skill-creator](./skill-creator/SKILL.md) | Guide for creating effective skills that extend Claude's capabilities |
 | [django-extensions](./django-extensions/SKILL.md) | Django-extensions management commands for introspection, debugging, and development |
-| [systematic-debugging](./systematic-debugging/SKILL.md) | Four-phase debugging methodology with root cause analysis |
 
-## When to Use Each Skill
+### Testing & Debugging
+| Skill | Description |
+|-------|-------------|
+| [pytest-django-patterns](./pytest-django-patterns/SKILL.md) | pytest-django, Factory Boy, fixtures, TDD workflow |
+| [systematic-debugging](./systematic-debugging/SKILL.md) | Four-phase debugging methodology, root cause analysis |
 
-### skill-creator
-Use when you want to create a new skill or update an existing one. This skill provides guidance on:
-- Skill structure and anatomy
-- Writing effective descriptions and triggers
-- Choosing appropriate degrees of freedom
-- Bundling resources (scripts, references)
+### Django Core
+| Skill | Description |
+|-------|-------------|
+| [django-models](./django-models/SKILL.md) | Model design, QuerySet optimization, signals, migrations |
+| [django-forms](./django-forms/SKILL.md) | Form handling, validation, ModelForm patterns |
+| [django-templates](./django-templates/SKILL.md) | Template inheritance, tags, filters, partials |
 
-### django-extensions
-Use when you need to:
-- Explore URL routes, models, or settings
-- Debug Django project structure
-- Run enhanced shell (shell_plus) with auto-imported models
-- Profile server performance
-- Compare models to database schema (sqldiff)
+### Frontend & UI
+| Skill | Description |
+|-------|-------------|
+| [htmx-alpine-patterns](./htmx-alpine-patterns/SKILL.md) | HTMX attributes, partial templates, dynamic UI |
 
-### systematic-debugging
-Use when you need to:
-- Investigate bugs or unexpected behavior
-- Fix test failures
-- Troubleshoot issues with a methodical approach
-- Ensure root cause analysis before applying fixes
+### APIs & Background Tasks
+| Skill | Description |
+|-------|-------------|
+| [drf-patterns](./drf-patterns/SKILL.md) | Django REST Framework serializers, viewsets, permissions |
+| [celery-patterns](./celery-patterns/SKILL.md) | Celery tasks, retry strategies, periodic tasks |
+| [django-channels](./django-channels/SKILL.md) | WebSocket consumers, real-time features |
+
+## Skill Combinations for Common Tasks
+
+### Building a New Feature
+1. **django-models** - Design models
+2. **django-forms** - Create forms for user input
+3. **htmx-alpine-patterns** - Dynamic UI
+4. **django-templates** - Page templates
+5. **pytest-django-patterns** - Write tests (TDD)
+
+### Building an API Endpoint
+1. **drf-patterns** - Serializers and viewsets
+2. **django-models** - QuerySet optimization
+3. **pytest-django-patterns** - API tests
+
+### Building a Background Task
+1. **celery-patterns** - Task definition
+2. **django-models** - Database operations
+3. **pytest-django-patterns** - Task tests
+
+### Debugging an Issue
+1. **systematic-debugging** - Root cause analysis
+2. **pytest-django-patterns** - Write failing test first
+3. **django-extensions** - Use show_urls, list_model_info, shell_plus for investigation
+
+### Creating New Skills
+1. **skill-creator** - Follow the skill creation guide
+2. **django-extensions** - Test your skill with project introspection commands
 
 ## How Skills Work
 
