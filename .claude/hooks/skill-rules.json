@@ -20,10 +20,7 @@
     "models/": "django-models",
     "templates/": "django-templates",
     "tests/": "pytest-django-patterns",
-    "api/": "drf-patterns",
-    "serializers/": "drf-patterns",
     "tasks/": "celery-patterns",
-    "consumers/": "django-channels",
     "forms/": "django-forms"
   },
   "skills": {
@@ -58,20 +55,6 @@
         "contentPatterns": ["forms.Form", "ModelForm", "clean_", "is_valid"]
       },
       "excludePatterns": ["format", "transform", "platform"]
-    },
-    "drf-patterns": {
-      "description": "Django REST Framework serializers and viewsets",
-      "priority": 8,
-      "triggers": {
-        "keywords": ["api", "serializer", "viewset", "drf", "rest", "endpoint"],
-        "keywordPatterns": ["\\bapi\\b", "\\bserializer\\b", "\\bviewset\\b", "rest.?framework"],
-        "pathPatterns": ["**/api/**", "**/serializers.py", "**/viewsets.py", "**/api/*.py"],
-        "intentPatterns": [
-          "(?:create|add|write).*(?:api|endpoint|serializer)",
-          "(?:rest|api).*(?:endpoint|view)"
-        ],
-        "contentPatterns": ["rest_framework", "serializers.", "APIView", "ViewSet"]
-      }
     },
     "htmx-alpine-patterns": {
       "description": "HTMX patterns for dynamic Django templates",
@@ -113,20 +96,6 @@
           "(?:async|background).*(?:job|process)"
         ],
         "contentPatterns": ["@shared_task", "@celery", ".delay(", ".apply_async"]
-      }
-    },
-    "django-channels": {
-      "description": "Django Channels WebSocket patterns",
-      "priority": 6,
-      "triggers": {
-        "keywords": ["websocket", "channels", "consumer", "realtime", "ws"],
-        "keywordPatterns": ["\\bwebsocket\\b", "\\bchannel\\b", "\\bconsumer\\b"],
-        "pathPatterns": ["**/consumers.py", "**/routing.py", "**/consumers/*.py"],
-        "intentPatterns": [
-          "(?:add|create).*(?:websocket|realtime)",
-          "(?:websocket|channel).*(?:connection|message)"
-        ],
-        "contentPatterns": ["WebsocketConsumer", "AsyncWebsocketConsumer", "channel_layer"]
       }
     },
     "django-models": {

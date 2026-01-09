@@ -28,12 +28,10 @@ This directory contains project-specific skills that provide Claude with domain 
 |-------|-------------|
 | [htmx-patterns](./htmx-patterns/SKILL.md) | HTMX attributes, partial templates, dynamic UI |
 
-### APIs & Background Tasks
+### Background Tasks
 | Skill | Description |
 |-------|-------------|
-| [drf-patterns](./drf-patterns/SKILL.md) | Django REST Framework serializers, viewsets, permissions |
 | [celery-patterns](./celery-patterns/SKILL.md) | Celery tasks, retry strategies, periodic tasks |
-| [django-channels](./django-channels/SKILL.md) | WebSocket consumers, real-time features |
 
 ## Skill Combinations for Common Tasks
 
@@ -43,11 +41,6 @@ This directory contains project-specific skills that provide Claude with domain 
 3. **htmx-patterns** - Dynamic UI
 4. **django-templates** - Page templates
 5. **pytest-django-patterns** - Write tests (TDD)
-
-### Building an API Endpoint
-1. **drf-patterns** - Serializers and viewsets
-2. **django-models** - QuerySet optimization
-3. **pytest-django-patterns** - API tests
 
 ### Building a Background Task
 1. **celery-patterns** - Task definition

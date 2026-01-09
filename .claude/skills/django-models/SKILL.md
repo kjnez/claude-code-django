@@ -137,6 +137,5 @@ Create with `makemigrations --empty app_name`. Use `apps.get_model()` to access 
 
 Works with:
 - **pytest-django-patterns**: Factory-based model testing
-- **drf-patterns**: Model serialization for APIs
 - **celery-patterns**: Async operations on models (pass IDs, not instances)
 - **django-forms**: ModelForm validation and saving
