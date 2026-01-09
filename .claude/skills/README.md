@@ -26,7 +26,7 @@ This directory contains project-specific skills that provide Claude with domain 
 ### Frontend & UI
 | Skill | Description |
 |-------|-------------|
-| [htmx-alpine-patterns](./htmx-alpine-patterns/SKILL.md) | HTMX attributes, partial templates, dynamic UI |
+| [htmx-patterns](./htmx-patterns/SKILL.md) | HTMX attributes, partial templates, dynamic UI |
 
 ### APIs & Background Tasks
 | Skill | Description |
@@ -40,7 +40,7 @@ This directory contains project-specific skills that provide Claude with domain 
 ### Building a New Feature
 1. **django-models** - Design models
 2. **django-forms** - Create forms for user input
-3. **htmx-alpine-patterns** - Dynamic UI
+3. **htmx-patterns** - Dynamic UI
 4. **django-templates** - Page templates
 5. **pytest-django-patterns** - Write tests (TDD)
 
