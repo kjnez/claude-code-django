@@ -1,0 +1,1 @@
+Run `ruff check`, `ruff format --check`, and `ty check` on the files that were modified. Fix any errors or warnings reported. Do not suppress errors with `# noqa` or `# type: ignore` unless absolutely necessary.
