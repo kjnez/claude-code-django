@@ -526,6 +526,11 @@ If LSP isn't working:
    claude /plugin  # View Errors tab
    ```
 
+4. **Set an environment variable:**
+   ```bash
+   export ENABLE_LSP_TOOL=1
+   ```
+
 ---
 
 ### Skill Evaluation Hooks
