@@ -19,6 +19,7 @@ This directory contains project-specific skills that provide Claude with domain 
 | [pr-summary](./pr-summary/SKILL.md) | Generate a pull request summary for the current branch |
 | [code-quality](./code-quality/SKILL.md) | Run code quality checks and report findings by severity |
 | [docs-sync](./docs-sync/SKILL.md) | Check if documentation is in sync with code |
+| [worktree-commit-merge](./worktree-commit-merge/SKILL.md) | Commit worktree changes, merge into master/main, sync branch |
 
 ### Testing & Debugging
 | Skill | Description |

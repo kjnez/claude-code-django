@@ -649,6 +649,7 @@ Skills are markdown documents that teach Claude project-specific patterns and co
 - [pr-summary](.claude/skills/pr-summary/SKILL.md) - Generate PR description from branch diff
 - [code-quality](.claude/skills/code-quality/SKILL.md) - Run ruff, pyright, pytest and report findings
 - [docs-sync](.claude/skills/docs-sync/SKILL.md) - Verify docs match current code
+- [worktree-commit-merge](.claude/skills/worktree-commit-merge/SKILL.md) - Commit worktree changes and merge into master/main
 
 *Domain knowledge skills (auto-triggered):*
 - [skill-creator](.claude/skills/skill-creator/SKILL.md) - Guide for creating effective skills
@@ -907,6 +908,7 @@ Commit everything except:
 | [.claude/skills/pr-summary/SKILL.md](.claude/skills/pr-summary/SKILL.md) | Generate PR description from branch diff |
 | [.claude/skills/code-quality/SKILL.md](.claude/skills/code-quality/SKILL.md) | Run ruff, pyright, pytest and report findings |
 | [.claude/skills/docs-sync/SKILL.md](.claude/skills/docs-sync/SKILL.md) | Verify docs match current code |
+| [.claude/skills/worktree-commit-merge/SKILL.md](.claude/skills/worktree-commit-merge/SKILL.md) | Commit worktree changes and merge into master/main |
 | **Skills (domain knowledge)** | |
 | [.claude/skills/skill-creator/SKILL.md](.claude/skills/skill-creator/SKILL.md) | Guide for creating effective skills |
 | [.claude/skills/django-extensions/SKILL.md](.claude/skills/django-extensions/SKILL.md) | Django-extensions management commands |

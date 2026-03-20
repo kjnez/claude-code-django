@@ -87,6 +87,7 @@ Before implementing ANY task, check if relevant skills apply:
 - Summarizing branch changes → `pr-summary` skill
 - Running quality checks → `code-quality` skill
 - Checking docs accuracy → `docs-sync` skill
+- Committing worktree changes and merging to master/main → `worktree-commit-merge` skill
 
 ## Common Commands
 

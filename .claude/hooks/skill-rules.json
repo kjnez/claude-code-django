@@ -140,6 +140,20 @@
         "contentPatterns": ["runs-on:", "uses:", "steps:"]
       }
     },
+    "worktree-commit-merge": {
+      "description": "Commit worktree changes, merge into master/main, sync branch",
+      "priority": 8,
+      "triggers": {
+        "keywords": ["worktree", "merge", "master", "main"],
+        "keywordPatterns": ["\\bworktree\\b", "\\bmerge.*(?:master|main)\\b"],
+        "intentPatterns": [
+          "commit.*(?:and|then).*merge",
+          "merge.*(?:to|into).*(?:master|main)",
+          "(?:done|finished).*worktree",
+          "we.re done"
+        ]
+      }
+    },
     "documentation": {
       "description": "Documentation and docstrings",
       "priority": 3,
